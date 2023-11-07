@@ -57,6 +57,11 @@ class BrowserWindow(QMainWindow):
         load_bookmark_action.triggered.connect(self.load_bookmark)
         bookmarks_menu.addAction(load_bookmark_action)
 
+        # Add Delete Bookmark menu option
+        delete_bookmark_action = QAction("Удалить закладку", self)
+        delete_bookmark_action.triggered.connect(self.delete_bookmark)
+        bookmarks_menu.addAction(delete_bookmark_action)
+
         # Load bookmarks from file
         self.bookmarks = self.load_bookmarks()
 
@@ -74,6 +79,12 @@ class BrowserWindow(QMainWindow):
         bookmark_name, ok = QInputDialog.getText(self, "Добавить закладку", "Введите имя закладки:")
         if ok and bookmark_name:
             self.bookmarks[bookmark_name] = current_url
+            self.save_bookmarks()
+
+    def delete_bookmark(self):
+        bookmark_name, ok = QInputDialog.getItem(self, "Удалить закладку", "Выберите закладку:", list(self.bookmarks.keys()), editable=False)
+        if ok and bookmark_name:
+            del self.bookmarks[bookmark_name]
             self.save_bookmarks()
 
     def save_bookmarks(self):
