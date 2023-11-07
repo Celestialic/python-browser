@@ -3,5 +3,6 @@ import PyInstaller.__main__
 PyInstaller.__main__.run([
     'app.py',
     '-F',
-    '-w'
+    '-w',
+    '-i=app.ico'
 ])

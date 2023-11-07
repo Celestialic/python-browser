@@ -65,6 +65,10 @@ class BrowserWindow(QMainWindow):
         # Load bookmarks from file
         self.bookmarks = self.load_bookmarks()
 
+        # Set program icon
+        icon = QIcon("icon.ico")
+        self.setWindowIcon(icon)
+
     def go_home(self):
         self.browser.setUrl(QUrl("https://www.google.com"))
 
