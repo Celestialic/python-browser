@@ -8,29 +8,32 @@ import json
 class BrowserWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PyBrowser - от ГЕРЫЧА")
+        self.setWindowTitle("Браузер")
         self.browser = QWebEngineView()
         self.setCentralWidget(self.browser)
         self.showMaximized()
+
+        # Set minimum size for the window
+        self.setMinimumSize(QSize(700, 500))
 
         self.browser.setUrl(QUrl("https://www.google.com"))
 
         toolbar = QToolBar()
         self.addToolBar(toolbar)
 
-        home_button = QAction("Хата", self)
+        home_button = QAction("Домой", self)
         home_button.triggered.connect(self.go_home)
         toolbar.addAction(home_button)
 
-        back_button = QAction("Зад", self)
+        back_button = QAction("Назад", self)
         back_button.triggered.connect(self.browser.back)
         toolbar.addAction(back_button)
 
-        forward_button = QAction("Перед", self)
+        forward_button = QAction("Вперёд", self)
         forward_button.triggered.connect(self.browser.forward)
         toolbar.addAction(forward_button)
 
-        reload_button = QAction("Шиндовс 0x0001", self)
+        reload_button = QAction("Перезагрузить", self)
         reload_button.triggered.connect(self.browser.reload)
         toolbar.addAction(reload_button)
 
