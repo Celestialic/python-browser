@@ -37,6 +37,11 @@ class BrowserWindow(QMainWindow):
         reload_button.triggered.connect(self.browser.reload)
         toolbar.addAction(reload_button)
 
+        # Add an address bar
+        self.address_bar = QLineEdit(self)
+        self.address_bar.returnPressed.connect(self.load_url)
+        toolbar.addWidget(self.address_bar)
+
         menu_bar = self.menuBar()
 
         file_menu = menu_bar.addMenu("Меню")
@@ -65,12 +70,46 @@ class BrowserWindow(QMainWindow):
         delete_bookmark_action.triggered.connect(self.delete_bookmark)
         bookmarks_menu.addAction(delete_bookmark_action)
 
-        # Load bookmarks from file
+        # Add History menu option
+        history_menu = file_menu.addMenu("История")
+        view_history_action = QAction("Просмотреть историю", self)
+        view_history_action.triggered.connect(self.view_history)
+        history_menu.addAction(view_history_action)
+
+        # Add Clear History option in the History menu
+        clear_history_action = QAction("Очистить историю", self)
+        clear_history_action.triggered.connect(self.clear_history)
+        history_menu.addAction(clear_history_action)
+
+        # Load bookmarks and history from file
         self.bookmarks = self.load_bookmarks()
+        self.history = self.load_history()
 
         # Set program icon
         icon = QIcon("icon.ico")
         self.setWindowIcon(icon)
+
+        # Connect a slot to update history on page load
+        self.browser.urlChanged.connect(self.update_history)
+
+    def update_history(self, q):
+        current_url = self.browser.url().toString()
+        if current_url not in self.history:
+            self.history.append(current_url)
+            self.save_history()
+
+    def view_history(self):
+        history_text = "\n".join(self.history)
+        history_dialog = QDialog(self)
+        history_dialog.setWindowTitle("История")
+        history_dialog.setGeometry(100, 100, 400, 300)
+
+        text_browser = QTextBrowser(history_dialog)
+        text_browser.setGeometry(10, 10, 380, 280)
+        text_browser.setPlainText(history_text)
+        text_browser.setOpenExternalLinks(True)
+
+        history_dialog.exec_()
 
     def go_home(self):
         self.browser.setUrl(QUrl("https://www.google.com"))
@@ -94,6 +133,11 @@ class BrowserWindow(QMainWindow):
             del self.bookmarks[bookmark_name]
             self.save_bookmarks()
 
+    def clear_history(self):
+        self.history = []
+        self.save_history()
+        QMessageBox.information(self, "История очищена", "История успешно очищена.")
+
     def save_bookmarks(self):
         with open("bookmarks.json", "w") as f:
             json.dump(self.bookmarks, f)
@@ -105,12 +149,29 @@ class BrowserWindow(QMainWindow):
         except FileNotFoundError:
             return {}
 
+    def save_history(self):
+        with open("history.json", "w") as f:
+            json.dump(self.history, f)
+
+    def load_history(self):
+        try:
+            with open("history.json", "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return []
+
     def load_bookmark(self):
         bookmark_name, ok = QInputDialog.getItem(self, "Загрузить закладку", "Выберите закладку:", list(self.bookmarks.keys()), editable=False)
         if ok and bookmark_name:
             url = self.bookmarks.get(bookmark_name)
             if url:
                 self.browser.setUrl(QUrl(url))
+
+    def load_url(self):
+        url = self.address_bar.text()
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = "http://" + url
+        self.browser.setUrl(QUrl(url))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
